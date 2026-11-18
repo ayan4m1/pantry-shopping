@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Shopping;
+using Shopping.Settings;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -61,6 +63,12 @@ builder.Services.AddDbContext<ShoppingDbContext>(options => options
     .UseNpgsql(builder.Configuration.GetConnectionString("ShoppingDb"))
     .UseSnakeCaseNamingConvention()
 );
+
+builder.Services.Configure<IdentitySettings>(builder.Configuration.GetSection("IdentitySettings"));
+builder.Services.AddHttpClient<IIdentityClient, IdentityClient>((sp, client) =>
+{
+    client.BaseAddress = new Uri(sp.GetRequiredService<IOptions<IdentitySettings>>().Value.BaseUrl);
+}).AddStandardResilienceHandler();
 
 builder.Services.AddHealthChecks()
     .AddNpgSql(sp => sp.GetRequiredService<IConfiguration>().GetConnectionString("ShoppingDb")!
