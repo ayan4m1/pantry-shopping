@@ -58,12 +58,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 builder.Services.AddAuthorization();
 
 builder.Services.AddDbContext<ShoppingDbContext>(options => options
-    .UseNpgsql(builder.Configuration.GetConnectionString("IdentityDb"))
+    .UseNpgsql(builder.Configuration.GetConnectionString("ShoppingDb"))
     .UseSnakeCaseNamingConvention()
 );
 
 builder.Services.AddHealthChecks()
-    .AddNpgSql(sp => sp.GetRequiredService<IConfiguration>().GetConnectionString("IdentityDb")!
+    .AddNpgSql(sp => sp.GetRequiredService<IConfiguration>().GetConnectionString("ShoppingDb")!
 );
 
 builder.Services.AddCors(options =>
