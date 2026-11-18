@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using pantry_shopping;
+using Shopping;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 

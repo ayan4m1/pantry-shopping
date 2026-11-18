@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using pantry_shopping.Entities;
+using Shopping.Entities;
 
-namespace pantry_shopping
+namespace Shopping
 {
     public class ShoppingDbContext(DbContextOptions<ShoppingDbContext> options) : DbContext(options)
     {
@@ -15,7 +15,12 @@ namespace pantry_shopping
                 e.Property(p => p.Name).HasMaxLength(100);
             });
 
-            b.Entity<ShoppingItem>();
+            b.Entity<ShoppingItem>(e =>
+            {
+                e.HasIndex(si => si.UserId); // for listing all items bound to a user
+                e.HasIndex(si => new { si.UserId, si.ProductId }).IsUnique(); // only one product per user
+                e.HasIndex(si => si.Purchased);
+            });
         }
     }
 }

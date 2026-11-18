@@ -1,4 +1,4 @@
-﻿namespace pantry_shopping.Entities
+﻿namespace Shopping.Entities
 {
     public class Product
     {
