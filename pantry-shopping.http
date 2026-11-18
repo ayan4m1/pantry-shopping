@@ -1,0 +1,6 @@
+@pantry_shopping_HostAddress = http://localhost:11387
+
+GET {{pantry_shopping_HostAddress}}/shopping
+Accept: application/json
+
+###
