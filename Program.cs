@@ -70,6 +70,12 @@ builder.Services.AddHttpClient<IIdentityClient, IdentityClient>((sp, client) =>
     client.BaseAddress = new Uri(sp.GetRequiredService<IOptions<IdentitySettings>>().Value.BaseUrl);
 }).AddStandardResilienceHandler();
 
+builder.Services.Configure<InventorySettings>(builder.Configuration.GetSection("InventorySettings"));
+builder.Services.AddHttpClient<IInventoryClient, InventoryClient>((sp, client) =>
+{
+    client.BaseAddress = new Uri(sp.GetRequiredService<IOptions<InventorySettings>>().Value.BaseUrl);
+}).AddStandardResilienceHandler();
+
 builder.Services.AddHealthChecks()
     .AddNpgSql(sp => sp.GetRequiredService<IConfiguration>().GetConnectionString("ShoppingDb")!
 );
