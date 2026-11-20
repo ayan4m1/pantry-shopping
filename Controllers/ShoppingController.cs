@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Shopping.Entities;
+using Shopping.Requests;
 using System.Security.Claims;
 
 namespace Shopping.Controllers
@@ -8,9 +9,9 @@ namespace Shopping.Controllers
     [Route("[controller]")]
     public class ShoppingController(ShoppingDbContext db) : ControllerBase
     {
-        [HttpPut("create")]
+        [HttpPost]
         [EndpointName("createShoppingItem")]
-        public async Task<ActionResult<Guid>> CreateShoppingItem([FromQuery] Guid productId)
+        public async Task<ActionResult<Guid>> CreateShoppingItem([FromBody] CreateShoppingItemRequest request)
         {
             var userId = User.FindFirstValue("sub");
 
@@ -19,7 +20,7 @@ namespace Shopping.Controllers
                 return NotFound();
             }
 
-            var product = await db.Products.FindAsync(productId);
+            var product = await db.Products.FindAsync(request.ProductId);
 
             if (product == null)
             {
@@ -29,6 +30,7 @@ namespace Shopping.Controllers
             var newItem = new ShoppingItem()
             {
                 UserId = userId,
+                HouseholdId = request.HouseholdId,
                 ProductId = product.Id,
                 Purchased = false
             };
