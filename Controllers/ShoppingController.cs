@@ -6,10 +6,10 @@ using System.Security.Claims;
 namespace Shopping.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("[controller]/households/{householdId:guid}/shopping-items/{itemId:guid}")]
     public class ShoppingController(ShoppingDbContext db) : ControllerBase
     {
-        [HttpPost("households/{householdId:guid}/shopping-items/{itemId:guid}/purchase")]
+        [HttpPost("purchase")]
         [EndpointName("purchaseShoppingItem")]
         public async Task<ActionResult<bool>> Purchase(Guid householdId, Guid itemId, [FromBody] PurchaseRequest request)
         {
@@ -36,7 +36,7 @@ namespace Shopping.Controllers
             return Ok(true);
         }
 
-        [HttpDelete("households/{householdId:guid}/shopping-items/{itemId:guid}/dismiss")]
+        [HttpDelete("dismiss")]
         [EndpointName("dismissShoppingItem")]
         public async Task<ActionResult<bool>> Dismiss(Guid householdId, Guid itemId)
         {
