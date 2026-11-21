@@ -7,20 +7,13 @@ namespace Shopping.Controllers
 {
     // Service-to-service endpoints; the gateway blocks /api/{service}/internal/** from the outside.
     [ApiController]
-    [Route("internal")]
+    [Route("[controller]")]
     [ApiExplorerSettings(IgnoreApi = true)]
     public class InternalController(ShoppingDbContext db) : ControllerBase
     {
         [HttpPost("shopping-items")]
-        public async Task<ActionResult<Guid>> Create([FromBody] CreateShoppingItemRequest request)
+        public async Task<ActionResult<Guid>> Create([FromBody] CreateShoppingItemRequest request, CancellationToken ct)
         {
-            var userId = User.FindFirstValue("sub");
-
-            if (string.IsNullOrWhiteSpace(userId))
-            {
-                return NotFound();
-            }
-
             var newItem = new ShoppingItem()
             {
                 Id = new Guid(),
@@ -33,9 +26,9 @@ namespace Shopping.Controllers
                 Unit = request.Unit
             };
 
-            var result = await db.ShoppingItems.AddAsync(newItem);
+            var result = await db.ShoppingItems.AddAsync(newItem, ct);
 
-            await db.SaveChangesAsync();
+            await db.SaveChangesAsync(ct);
 
             return Ok(result.Entity.Id);
         }
