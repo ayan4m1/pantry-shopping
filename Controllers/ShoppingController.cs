@@ -11,6 +11,8 @@ namespace Shopping.Controllers
     {
         [HttpPost("purchase")]
         [EndpointName("purchaseShoppingItem")]
+        [ProducesResponseType<bool>(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<bool>> Purchase(Guid householdId, Guid itemId, [FromBody] PurchaseRequest request)
         {
             var userId = User.FindFirstValue("sub");
@@ -38,6 +40,8 @@ namespace Shopping.Controllers
 
         [HttpDelete("dismiss")]
         [EndpointName("dismissShoppingItem")]
+        [ProducesResponseType<bool>(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<bool>> Dismiss(Guid householdId, Guid itemId)
         {
             var userId = User.FindFirstValue("sub");
