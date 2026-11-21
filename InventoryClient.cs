@@ -1,15 +1,18 @@
-﻿namespace Shopping
+﻿using Shopping.Requests;
+
+namespace Shopping
 {
     public interface IInventoryClient
     {
-        Task DeleteHouseholdStockAsync(Guid householdId);
+        Task RestockProductAsync(Guid productId, Guid shoppingItemId, decimal quantity, CancellationToken ct);
     }
 
     public class InventoryClient(HttpClient http) : IInventoryClient
     {
-        public async Task DeleteHouseholdStockAsync(Guid householdId)
+        public async Task RestockProductAsync(Guid productId, Guid shoppingItemId, decimal quantity, CancellationToken ct)
         {
-            var response = await http.DeleteAsync($"internal/household/{householdId}/stock");
+            using var content = JsonContent.Create(new RestockRequest(shoppingItemId, quantity));
+            using var response = await http.PostAsync($"internal/products/{productId}/restock", content, ct);
 
             response.EnsureSuccessStatusCode();
         }

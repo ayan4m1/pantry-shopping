@@ -9,9 +9,9 @@ namespace Shopping.Controllers
     [Route("[controller]")]
     public class ShoppingController(ShoppingDbContext db) : ControllerBase
     {
-        [HttpPost]
-        [EndpointName("createShoppingItem")]
-        public async Task<ActionResult<Guid>> CreateShoppingItem([FromBody] CreateShoppingItemRequest request)
+        [HttpPost("households/{householdId:guid}/shopping-items/{itemId:guid}/purchase")]
+        [EndpointName("purchaseShoppingItem")]
+        public async Task<ActionResult<bool>> Purchase(Guid householdId, Guid itemId, [FromBody] PurchaseRequest request)
         {
             var userId = User.FindFirstValue("sub");
 
@@ -20,77 +20,42 @@ namespace Shopping.Controllers
                 return NotFound();
             }
 
-            var product = await db.Products.FindAsync(request.ProductId);
+            var shoppingItem = await db.ShoppingItems.FindAsync(itemId);
 
-            if (product == null)
+            if (shoppingItem == null || shoppingItem.HouseholdId != householdId)
             {
                 return NotFound();
             }
 
-            var newItem = new ShoppingItem()
-            {
-                UserId = userId,
-                HouseholdId = request.HouseholdId,
-                ProductId = product.Id,
-                Purchased = false
-            };
-
-            var result = await db.ShoppingItems.AddAsync(newItem);
-
-            await db.SaveChangesAsync();
-
-            return Ok(result.Entity.Id);
-        }
-
-        [HttpPost("set-state")]
-        [EndpointName("setShoppingItemState")]
-        public async Task<ActionResult<bool>> SetShoppingItemState([FromQuery] Guid productId, [FromQuery] bool purchased)
-        {
-            var userId = User.FindFirstValue("sub");
-
-            if (string.IsNullOrWhiteSpace(userId))
-            {
-                return NotFound();
-            }
-
-            var shoppingItem = await db.ShoppingItems.FindAsync(productId);
-
-            if (shoppingItem == null)
-            {
-                return NotFound();
-            }
-
-            shoppingItem.Purchased = purchased;
+            shoppingItem.PurchasedQuantity = request.Quantity;
+            shoppingItem.CompletedByUserId = userId;
+            shoppingItem.Status = ShoppingItemStatus.Purchased;
 
             await db.SaveChangesAsync();
 
             return Ok(true);
         }
 
-        [HttpDelete("delete")]
-        [EndpointName("deleteShopingItem")]
-        public async Task<ActionResult<bool>> DeleteShoppingItem([FromQuery] string userId, [FromQuery] string productId)
+        [HttpDelete("households/{householdId:guid}/shopping-items/{itemId:guid}/dismiss")]
+        [EndpointName("dismissShoppingItem")]
+        public async Task<ActionResult<bool>> Dismiss(Guid householdId, Guid itemId)
         {
-            var currentUserId = User.FindFirstValue("sub");
+            var userId = User.FindFirstValue("sub");
 
-            if (string.IsNullOrWhiteSpace(currentUserId))
+            if (string.IsNullOrWhiteSpace(userId))
             {
                 return NotFound();
             }
 
-            if (currentUserId != userId)
-            {
-                return Unauthorized();
-            }
+            var shoppingItem = await db.ShoppingItems.FindAsync(itemId);
 
-            var item = await db.ShoppingItems.FindAsync(userId, productId);
-
-            if (item == null)
+            if (shoppingItem == null || shoppingItem.HouseholdId != householdId)
             {
                 return NotFound();
             }
 
-            db.ShoppingItems.Remove(item);
+            shoppingItem.CompletedByUserId = userId;
+            shoppingItem.Status = ShoppingItemStatus.Dismissed;
 
             await db.SaveChangesAsync();
 
