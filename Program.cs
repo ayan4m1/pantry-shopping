@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Shopping;
+using Shopping.Services;
 using Shopping.Settings;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -62,6 +64,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
     };
 });
 builder.Services.AddAuthorization();
+
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy(Policies.HouseholdMember, p => p.AddRequirements(new HouseholdMemberRequirement()));
+builder.Services.AddScoped<IAuthorizationHandler, HouseholdMemberHandler>();
 
 builder.Services.AddDbContext<ShoppingDbContext>(options => options
     .UseNpgsql(builder.Configuration.GetConnectionString("ShoppingDb"))

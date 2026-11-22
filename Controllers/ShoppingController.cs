@@ -1,12 +1,17 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Shopping.Entities;
 using Shopping.Requests;
+using Shopping.Services;
 using System.Security.Claims;
 
 namespace Shopping.Controllers
 {
     [ApiController]
     [Route("[controller]/households/{householdId:guid}/shopping-items/{itemId:guid}")]
+    [Authorize(Policy = Policies.HouseholdMember)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public class ShoppingController(ShoppingDbContext db) : ControllerBase
     {
         [HttpPost("purchase")]
@@ -15,12 +20,7 @@ namespace Shopping.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<bool>> Purchase(Guid householdId, Guid itemId, [FromBody] PurchaseRequest request)
         {
-            var userId = User.FindFirstValue("sub");
-
-            if (string.IsNullOrWhiteSpace(userId))
-            {
-                return NotFound();
-            }
+            var userId = User.FindFirstValue("sub")!;
 
             var shoppingItem = await db.ShoppingItems.FindAsync(itemId);
 
@@ -44,12 +44,7 @@ namespace Shopping.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<bool>> Dismiss(Guid householdId, Guid itemId)
         {
-            var userId = User.FindFirstValue("sub");
-
-            if (string.IsNullOrWhiteSpace(userId))
-            {
-                return NotFound();
-            }
+            var userId = User.FindFirstValue("sub")!;
 
             var shoppingItem = await db.ShoppingItems.FindAsync(itemId);
 
